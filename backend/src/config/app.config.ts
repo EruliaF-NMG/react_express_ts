@@ -1,4 +1,3 @@
-
 const currentEnv: string = process.env.APP_ENV || 'development';
 const port: Number|string = process.env.APP_PORT || 3000;
 const baseUrl: string = process.env.APP_URL || `http://localhost:${port}/`;
