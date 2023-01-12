@@ -1,8 +1,9 @@
 
 import { Module } from "./core";
-import DemoModule from "./modules/demo/demo.module";
+import AuthModule from "./modules/authentication/auth.module";
+import UserModule from "./modules/user-manage/user.module";
 
 @Module({
-    modules:[DemoModule]
+    modules:[UserModule,AuthModule]
 })
 export default class MainModule{}

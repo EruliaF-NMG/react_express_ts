@@ -12,7 +12,8 @@ export function Injectable() {
         return class extends constructor {
             constructor(...args: any[]) {
                 // get injections from class; previously created by @inject()
-                const injections = (constructor as any).injections as Injection[] || [];
+                let injections = (constructor as any).injections as Injection[] || [];
+                injections = injections.sort((a, b) => a.index - b.index);
                 // get the instances to inject from the Container
                 // this implementation does not support args which should not be injected
                 //iocContainer.getContainer();
@@ -33,11 +34,9 @@ export function Inject(key: string) {
         const existingInjections: Injection[] = (target as any).injections || [];
 
         iocContainer.setDependencyMap(target.name,key);
-        // create property 'injections' holding all constructor parameters, which should be injected
+       
         Object.defineProperty(target, "injections", {
-            enumerable:   false,
-            configurable: false,
-            writable:     false,
+            writable:     true,
             value:        [...existingInjections, injection]
         })
     }

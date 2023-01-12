@@ -2,10 +2,11 @@ import express, { Application, Handler } from 'express';
 import cors from 'cors';
 import path from 'path';
 import MainServiceProvilder from '../main.module';
-import { ControllerInstance, Provider, RouteDefinitionInterface } from '../core/types/type.interface';
-import { isEmpty } from '../helpers/util-helpers';
+import { ControllerInstance, Provider, RouteDefinitionInterface, ValidateObjectMetaData } from '../core/types/type.interface';
+import { getValue, isEmpty } from '../helpers/util-helpers';
 import iocContainer from './ioc-container';
 import { ModuleProperties } from '../config/core.enum';
+import { validateRequest } from '../core/middleware/validator.middleware';
 
 class Bootstrap {
 
@@ -64,17 +65,17 @@ class Bootstrap {
     } 
 
     private _setControllers(module:any): void {
-        const controllers: Array<any> = Reflect.getMetadata( ModuleProperties.Controller , module );
+        const controllers: Array<any> = Reflect.getMetadata( ModuleProperties.Controller , module ) || [];
         this._controllers = [...this._controllers,...controllers];
     } 
 
     private _setServices(module:any): void {
-        const services: Array<Provider> = Reflect.getMetadata( ModuleProperties.Service, module );
+        const services: Array<Provider> = Reflect.getMetadata( ModuleProperties.Service, module ) || [];
         if( services ) this._services = [...this._services,...services];
     } 
 
     private _setRepositories(module:any): void {
-        const repositories: Array<any> = Reflect.getMetadata( ModuleProperties.Repositories, module );
+        const repositories: Array<any> = Reflect.getMetadata( ModuleProperties.Repositories, module ) || [];
         this._repositories = [...this._repositories,...repositories];
     }
 
@@ -86,8 +87,17 @@ class Bootstrap {
             const controllerInstance: ControllerInstance   = new controller() as any;
             const prefix: string                           = Reflect.getMetadata(ModuleProperties.Prefix, controller);
             const routers: Array<RouteDefinitionInterface> = Reflect.getMetadata(ModuleProperties.Routes, controller);
+            const validateProperties: Map<string,ValidateObjectMetaData> = Reflect.getMetadata('validate_properties', controller) || {};
+           
             routers.forEach(({ method, path, methodName }) => {
-                this._instance[method](`${prefix}${path}`, controllerInstance[methodName].bind(controllerInstance));
+
+               const param : any = [];
+
+               if( validateProperties.hasOwnProperty(methodName) ) param.push(validateRequest(getValue(validateProperties,methodName,{})));
+
+               param.push(controllerInstance[methodName].bind(controllerInstance));
+
+                this._instance.route(`${prefix}${path}`)[method](...param);
             });
         });
     }

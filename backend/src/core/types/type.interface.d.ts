@@ -1,4 +1,4 @@
-import { Handler } from "express";
+import { Handler,Request } from "express";
 
 export type Class = { new(...args: any[]): any; };
 
@@ -25,3 +25,20 @@ export type Module = {
     services?: Array<Provider>,
     modules?: ArrayOfClasses
 }
+
+export type CustomValidationMessage = {
+    [ validationMethod: string ] : string 
+}
+
+export interface CustomRequest<T> extends Request {
+    body: T
+}
+
+export interface ValidateObjectMetaData {
+    properties: Map<string,string>;
+    message?: Map<string,any>;
+    rules?: Map<string,string>;
+    fields?: Map<string,string>;
+    useClass: Class;
+}
+

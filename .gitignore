@@ -1,3 +1,7 @@
 /backend/node_modules
 /backend/dist
 /backend/yarn.lock
+
+/frontend/node_modules
+/frontend/dist
+/frontend/yarn.lock
